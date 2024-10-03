@@ -30,20 +30,87 @@ ssh -i "your-key.pem" ubuntu@ec2-your-instance-url.compute.amazonaws.com
 ```
 
 **Screenshot Placeholder:**  
-![SSH Access](path/to/ssh-screenshot.png)
+![SSH Access](https://github.com/Prince-Tee/stegHub_MERNSTACK/blob/main/screenshots_from_my_local_env/ssh%20into%20the%20instance%20through%20git%20bash.png)
 
 ---
 
 ## 2. Backend Configuration
 
-We will start by configuring the backend of the application.
 
-1. **Install necessary dependencies** using Yarn:
+#### 1. Update and Upgrade Ubuntu
+To ensure your Ubuntu server is up-to-date, first run the following commands:
 
-   ```bash
-   yarn init
-   yarn add express mongoose dotenv nodemon
-   ```
+```bash
+sudo apt update
+sudo apt upgrade
+```
+![sudo apt upgrade](https://github.com/Prince-Tee/stegHub_MERNSTACK/blob/main/screenshots_from_my_local_env/running%20sudo%20apt%20upgrade.png)
+#### 2. Install Node.js and npm
+We'll install Node.js version 18 and npm (which is included) from the NodeSource repository.
+
+Add the NodeSource repository:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+```
+
+Install Node.js:
+
+```bash
+sudo apt-get install -y nodejs
+```
+
+Verify the installation of Node.js and npm by checking their versions:
+
+```bash
+node -v
+npm -v
+```
+
+#### 3. Set Up Application Code
+Create a directory for your To-Do project:
+
+```bash
+mkdir Todo
+```
+
+Verify that the directory was created:
+
+```bash
+ls
+```
+
+#### 4. View Detailed Directory Information
+To see more useful details about the files and directories, use the following command:
+
+```bash
+ls -lih
+```
+
+This command will show different properties of files and directories, including their size in a human-readable format. You can also explore more useful options for the `ls` command by running:
+
+```bash
+ls --help
+```
+
+#### 5. Change Directory to Your Project Folder
+After creating the `Todo` directory, change your current working directory to `Todo`:
+
+```bash
+cd Todo
+```
+
+#### 6. Initialize Your Project with `npm init`
+Now, initialize your project by creating a `package.json` file that will contain metadata and dependencies required for the application. Run:
+
+```bash
+npm init
+```
+
+Follow the prompts that appear. You can press `Enter` several times to accept the default values. At the end, confirm by typing `yes` to generate the `package.json` file.
+
+---
+![sudo apt upgrade](https://github.com/Prince-Tee/stegHub_MERNSTACK/blob/main/screenshots_from_my_local_env/mkdir%20todo-npm%20init-packagejson.png)
 
 2. **Configure MongoDB** by creating a `.env` file with the MongoDB URI.
 
@@ -59,18 +126,194 @@ We will start by configuring the backend of the application.
 
 ---
 
-## 3. Installing ExpressJS
-
-To handle the backend API routes, install ExpressJS:
+#### . Install Express
+To use Express, install it in your project by running the following command:
 
 ```bash
-yarn add express
+npm install express
 ```
 
-**Screenshot Placeholder:**  
-![Express Installation](path/to/express-install.png)
+#### 2. Create the `index.js` File
+Next, create a file named `index.js` in your project directory:
+
+```bash
+touch index.js
+```
+
+Verify that the `index.js` file has been created by running the `ls` command:
+
+```bash
+ls
+```
+
+#### 3. Install the `dotenv` Module
+The `dotenv` module allows you to load environment variables from a `.env` file into your application. Install it with the following command:
+
+```bash
+npm install dotenv
+```
+
+#### 4. Open and Edit `index.js`
+Now, open the `index.js` file for editing:
+
+```bash
+nano index.js
+```
+
+Once the file is open, add the following code into it:
+
+```javascript
+const express = require('express');
+require('dotenv').config();
+
+const app = express();
+
+const port = process.env.PORT || 5000;
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.use((req, res, next) => {
+  res.send('Welcome to Express');
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+```
+
+#### 5. Start the Server
+Once you’ve saved your changes, start the Express server with the following command:
+
+```bash
+node index.js
+```
+
+If everything works correctly, you should see the following message in your terminal:
+
+```
+Server running on port 5000
+```
+### Opening Port 5000 on EC2 Security Groups
+
+![sudo apt upgrade](https://github.com/Prince-Tee/stegHub_MERNSTACK/blob/main/screenshots_from_my_local_env/server%20running%20on%20terminal%20node%20index.js.png)
+
+#### 1. Update Security Groups on AWS
+- Log into your **AWS Management Console**.
+- Navigate to **EC2 Dashboard**.
+- Under **Network & Security**, select **Security Groups**.
+- Choose the Security Group associated with your EC2 instance.
+- Click **Edit inbound rules** and add a new rule:
+  - **Type:** Custom TCP Rule
+  - **Port Range:** 5000
+  - **Source:** Anywhere 
+  
+#### 2. Access the Server
+Once port 5000 is open, open a browser and try to access your server’s public IP or DNS name followed by `:5000`:
+
+```bash
+http://<PublicIP-or-PublicDNS>:5000
+```
+
+If configured properly, you should see the response from your Express server: **Welcome to Express**.
 
 ---
+
+### Creating Routes for the To-Do Application
+
+Now that the server is running, it's time to create the backend routes for the core functionality of the To-Do app.
+
+#### 1. Creating the `routes` Folder
+First, let's create a directory named `routes` to store our route files:
+
+```bash
+$ mkdir routes
+```
+
+#### 2. Navigate to the `routes` Folder
+Now, change into the newly created `routes` directory:
+
+```bash
+$ cd routes
+```
+
+#### 3. Create the `api.js` File
+Next, we’ll create a file named `api.js` inside the `routes` folder:
+
+```bash
+$ touch api.js
+```
+
+#### 4. Define the Routes in `api.js`
+Now, open the `api.js` file using Vim:
+
+```bash
+$ nano api.js
+```
+
+Copy and paste the following code into the file:
+
+```javascript
+const express = require('express');
+const router = express.Router();
+
+// Route to display all tasks (GET)
+router.get('/todos', (req, res, next) => {
+  // Code to fetch and return all tasks goes here
+});
+
+// Route to create a new task (POST)
+router.post('/todos', (req, res, next) => {
+  // Code to create a new task goes here
+});
+
+// Route to delete a task (DELETE)
+router.delete('/todos/:id', (req, res, next) => {
+  // Code to delete a task by its ID goes here
+});
+
+module.exports = router;
+```
+
+#### Explanation of the Code:
+- **GET** `/todos`: This route will be responsible for fetching and displaying all the tasks in the To-Do list.
+- **POST** `/todos`: This route will allow users to create a new task.
+- **DELETE** `/todos/:id`: This route will delete a task by its ID.
+
+Use `:w` to save the file and `:qa` to exit Vim.
+
+#### 5. Integrating Routes in `index.js`
+Finally, we need to link these routes to our main application. Open the `index.js` file and update it to include the routes we just created:
+
+```javascript
+const express = require('express');
+require('dotenv').config();
+
+const app = express();
+
+// Middleware to handle JSON data
+app.use(express.json());
+
+const port = process.env.PORT || 5000;
+
+// Import the routes
+const apiRoutes = require('./routes/api');
+
+// Use the imported routes
+app.use('/api', apiRoutes);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+```
+
+This updates the server to use the `api.js` routes we just created.
+
+---
+
 
 ## 4. Models
 
